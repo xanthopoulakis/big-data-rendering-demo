@@ -4,6 +4,8 @@ $(function() {
     let stageWidth = $('#genome-plot-container').width(); 
     let stageHeight = 444 //0.5 * stageWidth;
 
+    d3.select('#heading-container').html(`Started loading data at <b>${new Date()}</b>...`)
+
     d3.queue()
     .defer(d3.json, "../json/metadata.json")
     .defer(d3.json, "../json/onekg.random.100.json")
@@ -30,6 +32,7 @@ $(function() {
         intervalsStroke.push(Object.values(d3.rgb(chromoBins[`${d.chromosome}`].color).darker()));
         intervalsDomainY = [d3.min([intervalsDomainY[0], +d.y]), d3.max([intervalsDomainY[1], +d.y])];
       });
+      d3.select('#heading-container2').html(`Finished loading <b>${intervals.length}</b> intervals at <b>${new Date()}</b>`)
       let rGenomePlot = new ReglGenomePlot('genome-plot-container', stageWidth, stageHeight);
       rGenomePlot.load(intervalsStartPoint, intervalsEndPoint, intervalsY, intervalsFill, intervalsStroke, [1, genomeLength] , intervalsDomainY);
       rGenomePlot.render();

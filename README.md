@@ -1,12 +1,12 @@
 # Big Data Rendering Demo
 
-A demo project to demostrate loading data via big data files in JSON and in Apache Arrow format and rendering them on WebGL using the Regl Javascripr library
+A demo project to demostrate visualising big data via heavy data files in JSON and in Apache Arrow format and rendering it on WebGL using the Regl Javascript library.
 
 ## Requirements
 
 For execution, you will only need Node.js installed on your environment.
 
-You also need git-lfs installed on your machine.
+You also need git-lfs installed on your machine to checkout the repository.
 
     brew install git-lfs
 
@@ -55,7 +55,7 @@ Also, be sure to have `git` available in your PATH, `npm` might need it.
 
 In the project folder, you may initiate the application via the terminal:
 
-    $ cd big-data-rendering-demo.git/
+    $ cd big-data-rendering-demo/
     $ ./start.sh
 
 In case it doesn't start automatically, open your preferred browser and navigate to the url
