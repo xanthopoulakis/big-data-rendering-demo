@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Demo</title>
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" href="../css/style.css" >
+  <script src="https://code.jquery.com/jquery.js"></script>
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+  <script src="../js/external/apache-arrow.js"></script>
+  <script src="../js/external/papaparse.min.js"></script>
+  <script src="../js/external/d3.min.js"></script>
+  <script src="../js/external/regl.js"></script>
+
+</head>
+<body>
+
+  <div class="container">
+    <nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Big Data Rendering Demo</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="/">Genome Plot</a></li>
+            <li><a href="/scatterplot.html">Scatter plot</a></li>
+              
+              
+          </ul>
+            
+        </div><!--/.nav-collapse -->
+      </div><!--/.container-fluid -->
+    </nav>
+    <div class="row pcontainer">
+      <div id="genome-plot-container" class="col-md-12"></div>
+    </div>
+    <div class="row pcontainer">
+      <div id="scatter-plot-container" class="col-md-12"></div>
+    </div>
+  </div>
+
+  <script src="../js/script.js"></script>
+  <script src="../js/regl-scatter-plot.js"></script>
+  <script src="../js/regl-genome-plot.js"></script>
+</body>
+</html>

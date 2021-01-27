@@ -1,0 +1,12 @@
+body {
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+canvas {
+  border: 1px solid gray !important;
+}
+
+.pcontainer {
+  margin-bottom: 10px;
+}
