@@ -6,6 +6,10 @@ A demo project to demostrate loading data via big data files in JSON and in Apac
 
 For execution, you will only need Node.js installed on your environment.
 
+You also need git-lfs installed on your machine.
+
+    brew install git-lfs
+
 ### Node
 
 [Node](http://nodejs.org/) is really easy to install and now includes [NPM](https://npmjs.org/).
@@ -44,14 +48,14 @@ Also, be sure to have `git` available in your PATH, `npm` might need it.
 
 ## Install
 
-    $ git clone git@github.com:mskilab/gGnome.js.git
+    $ git clone git@github.com:xanthopoulakis/big-data-rendering-demo.git
     $ npm install
 
 ## Start application
 
 In the project folder, you may initiate the application via the terminal:
 
-    $ cd gGnome.js/
+    $ cd big-data-rendering-demo.git/
     $ ./start.sh
 
 In case it doesn't start automatically, open your preferred browser and navigate to the url
@@ -59,18 +63,13 @@ In case it doesn't start automatically, open your preferred browser and navigate
     http://localhost:8080/index.html
 
 
-The validation of the data.json files is available at the respective Validator page
-
-    http://localhost:8080/validator.html
-
 ---
 
 ## Configuration
 
 The application is reading
 
-- the intervals, the walks, and their connections from the json file in gGnome.js/json/data.json
-- the genes from the json file in gGnome.js/json/genes.json
+- the intervals, from the json file in /json/onekg.random.100.json
+- the scatterplot data from the Apache Arrow file in /data.arrow
 - the chromosome metadata from the json file in gGnome.js/json/metadata.json
 
-In order to test your own data, simply replace the file gGnome.js/json/data.json with your own, on condition you maintain the same structure
