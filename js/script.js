@@ -22,6 +22,7 @@ $(function() {
         boundary += chromo.length;
         return hash;
       }, {});
+      console.log(genomeLength)
       let intervals = dataInput[1].intervals;
       let intervalsStartPoint = [], intervalsEndPoint = [], intervalsDomainY = [0,0], intervalsY = [], intervalsFill = [], intervalsStroke = [];
       intervals.forEach((d,i) => {

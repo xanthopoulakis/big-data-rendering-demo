@@ -12,12 +12,12 @@ class ReglScatterPlot {
     let regl = createREGL({
       container: this.container.node(),
       extensions: ['ANGLE_instanced_arrays'],
-      pixelRatio:  1,
-      attributes: { antialias: false, depth: false, alpha: false},
+      pixelRatio:  this.pixelRatio,
+      attributes: { antialias: true, depth: false, alpha: false},
     });
     this.reglInstance = regl;
     this.positions = [[0.0, 0.0]];
-    this.pointSize = 2.0;
+    this.pointSize = this.pixelRatio;
     this.clear();
     this.draw = regl({
         frag: `
@@ -30,9 +30,8 @@ class ReglScatterPlot {
         vert: `
         precision highp float;
         attribute vec2 position;
-        attribute vec4 color;
         varying vec4 vColor;
-        attribute float dataX, dataY;
+        attribute float dataX, dataY, color;
         uniform vec2 domainX, domainY;
         uniform float stageWidth, stageHeight, pointSize;
 
@@ -54,14 +53,17 @@ class ReglScatterPlot {
           float posX = kx * (dataX - domainX.x);
           float posY = stageHeight + ky * (dataY - domainY.x);
 
-          float vecX = posX * position.x + posX;
-          float vecY = posY * position.y + posY;
+          float vecX = position.x + posX;
+          float vecY = position.y + posY;
 
           vec2 v = normalizeCoords(vec2(vecX,vecY));
 
           gl_PointSize = pointSize;
           gl_Position = vec4(v, 0, 1);
-          vColor = vec4(color.r / 255.0, color.g / 255.0, color.b / 255.0, color.a / 1.0);
+          float red = floor(color / 65536.0);
+          float green = floor((color - red * 65536.0) / 256.0);
+          float blue = color - red * 65536.0 - green * 256.0;
+          vColor = vec4(red / 255.0, green / 255.0, blue / 255.0, 1.0);
         }`,
 
         attributes: {
