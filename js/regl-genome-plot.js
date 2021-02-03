@@ -166,8 +166,8 @@ class ReglGenomePlot {
             vec2 pointA = vec2(kx * (startPlace.x - domainX.x), stageHeight + ky * (startPlace.y - domainY.x));
             vec2 pointE = vec2(kx * (endPlace.x - domainX.x), stageHeight + ky * (endPlace.y - domainY.x));
 
-            vec2 pointB = vec2(pointA.x + 1.0, pointA.y);
-            vec2 pointD = vec2(pointE.x - 1.0, pointE.y);
+            vec2 pointB = vec2(pointA.x + 2.0, pointA.y);
+            vec2 pointD = vec2(pointE.x - 2.0, pointE.y);
 
             vec2 pointC = vec2(0.5 * (pointA.x + pointE.x), 0.5 * (pointA.y + pointE.y));
             if (startPlace.y == endPlace.y) {
@@ -249,7 +249,7 @@ class ReglGenomePlot {
     offset = this.strokeWidth;
     this.dataBufferFill = {startPoint, endPoint, color, offset, valY, domainX, domainY, instances};
 
-    let cons = connections.filter(e => ['REF', 'ALT'].includes(e.type));
+    let cons = connections;
     this.dataBufferConnections = {
       startPlace: this.reglInstance.buffer(cons.map(e => e.edges[0])), 
       endPlace: this.reglInstance.buffer(cons.map(e => e.edges[1])), 

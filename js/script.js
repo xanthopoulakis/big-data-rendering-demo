@@ -39,12 +39,13 @@ $(function() {
       });
       let intervalStruct = {intervalsStartPoint, intervalsEndPoint, intervalsY, intervalsFill, intervalsStroke, domainX , domainY};
       // Connections Processing
+      let connectionsColorMap = {ALT: rgbtoInteger('red'), REF: rgbtoInteger('lightgray'), LOOSE: rgbtoInteger('gray')};
       let connections = dataInput[1].connections;
       let connectionVerticesX = [],connectionVerticesY = [], connectionColors = [], connectionLinks = []; connectionCounter = 0;
       connections.forEach((d,i) => {
         let origin = intervalBins[Math.abs(d.source)];
         let target = intervalBins[Math.abs(d.sink)];
-        d.color = (d.type === 'ALT') ? rgbtoInteger('red') : rgbtoInteger('lightgray');
+        d.color = connectionsColorMap[d.type];
         if (origin) {
           d.sourcePlace = (Math.sign(d.source) > 0) ? origin.endPlace : origin.startPlace;
           d.sourceY = origin.y;
@@ -53,7 +54,13 @@ $(function() {
           d.sinkPlace = (Math.sign(d.sink) > 0) ? target.endPlace : target.startPlace;
           d.sinkY = target.y;
         }
-        d.edges = [[d.sourcePlace, d.sourceY], [d.sinkPlace, d.sinkY]].sort((a,b) => d3.ascending(a[0], b[0]));
+        if (origin && target) {
+          d.edges = [[d.sourcePlace, d.sourceY], [d.sinkPlace, d.sinkY]].sort((a,b) => d3.ascending(a[0], b[0]));
+        } else {
+          let touchPlace = d.sourcePlace || d.sinkPlace;
+          let touchY = d.sourceY || d.sinkY;
+          d.edges = [[touchPlace, touchY], [touchPlace, 1.1 * touchY]];
+        }
       })
 
       // rendering part
