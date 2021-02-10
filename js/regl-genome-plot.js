@@ -20,7 +20,12 @@ class ReglGenomePlot {
     this.rectangleHeight = 10.0;
     this.strokeWidth = 0.66;
     this.clear();
-    this.draw = regl({
+    this.fboIntervals = regl.framebuffer({
+      width: this.stageWidth,
+      height: this.stageHeight,
+      colorFormat: 'rgba',
+    });
+    let commonSpecIntervals = {
         frag: `
         precision highp float;
         varying vec4 vColor;
@@ -31,8 +36,7 @@ class ReglGenomePlot {
         vert: `
         precision highp float;
         attribute vec2 position;
-        attribute vec4 color;
-        attribute float startPoint, endPoint, valY;
+        attribute float startPoint, endPoint, valY, color;
         uniform vec2 domainX, domainY;
         varying vec4 vColor;
         uniform float stageWidth, stageHeight, rectangleHeight, offset;
@@ -67,7 +71,11 @@ class ReglGenomePlot {
           vec2 v = normalizeCoords(vec2(vecX,vecY));
 
           gl_Position = vec4(v, 0, 1);
-          vColor = vec4(color.r / 255.0, color.g / 255.0, color.b / 255.0, color.a / 1.0);
+          // vColor = vec4(color.r / 255.0, color.g / 255.0, color.b / 255.0, color.a / 1.0);
+          float red = floor(color / 65536.0);
+          float green = floor((color - red * 65536.0) / 256.0);
+          float blue = color - red * 65536.0 - green * 256.0;
+          vColor = vec4(red / 255.0, green / 255.0, blue / 255.0, 1.0);
         }`,
 
         attributes: {
@@ -112,9 +120,11 @@ class ReglGenomePlot {
 
         count: this.positions.length,
         instances: regl.prop('instances')
-      });
-      this.connectionSampling = 50; 
-      this.drawConnections = regl({
+    };
+    this.draw = regl(commonSpecIntervals);
+    this.drawFboIntervals = regl({...commonSpecIntervals, framebuffer: this.fboIntervals});
+    this.connectionSampling = 50; 
+    this.drawConnections = regl({
           frag: `
           precision highp float;
           varying vec4 vColor;
@@ -223,7 +233,7 @@ class ReglGenomePlot {
 
           count: this.connectionSampling,
           instances: regl.prop('instances')
-        });
+    });
   }
 
   clear() {
@@ -248,6 +258,36 @@ class ReglGenomePlot {
     color = fill;
     offset = this.strokeWidth;
     this.dataBufferFill = {startPoint, endPoint, color, offset, valY, domainX, domainY, instances};
+    // FboIntervals map
+    color = this.reglInstance.buffer(intervalsStroke.map((d,i) => i + 3000));
+    offset = 0;
+    this.dataBufferFboIntervals = {startPoint, endPoint, color, offset, valY, domainX, domainY, instances};
+
+    let self = this;
+    let selectedIndex = null;
+    d3.select(this.container.node()).select('canvas').on('mousemove', function() {
+      let position = d3.mouse(this);
+      const pixels = self.reglInstance.read({
+        x: position[0],
+        y: self.stageHeight - position[1],
+        width: 1,
+        height: 1,
+        data: new Uint8Array(6),
+        framebuffer: self.fboIntervals
+      });
+      d3.select('#plot-tooltip').html();
+      let index = pixels[0] * 65536 + pixels[1] * 256 + pixels[2] - 3000;
+      if ((index !== selectedIndex)) {
+        d3.select('#plot-tooltip').html(`Y value: ${intervalsY[index]}` );
+        let cloneFill = [...intervalsFill];
+        cloneFill[index] = 16744206; // orange
+        self.dataBufferFill.color.subdata(cloneFill);
+        self.clear();
+        self.render();
+      }
+      selectedIndex = index;
+
+    });
 
     let cons = connections;
     this.dataBufferConnections = {
@@ -265,10 +305,11 @@ class ReglGenomePlot {
         .on("zoom", () => {
 
           this.clear();
-
-          this.dataBufferStroke.domainX = d3.event.transform.rescaleX(xScale).domain();
-          this.dataBufferFill.domainX = d3.event.transform.rescaleX(xScale).domain();
-          this.dataBufferConnections.domainX = d3.event.transform.rescaleX(xScale).domain();
+          let newDomain = d3.event.transform.rescaleX(xScale).domain();
+          this.dataBufferStroke.domainX = newDomain;
+          this.dataBufferFill.domainX = newDomain;
+          this.dataBufferConnections.domainX = newDomain;
+          this.dataBufferFboIntervals.domainX = newDomain;
           this.render();
     }));
   }
@@ -277,5 +318,6 @@ class ReglGenomePlot {
     this.draw(this.dataBufferStroke);
     this.draw(this.dataBufferFill);
     this.drawConnections(this.dataBufferConnections);
+    this.drawFboIntervals(this.dataBufferFboIntervals);
   }
 }

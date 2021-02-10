@@ -32,8 +32,8 @@ $(function() {
         d.endPlace = chromoBins[`${d.chromosome}`].startPlace + d.endPoint;
         intervalsEndPoint.push(d.endPlace);
         intervalsY.push(+d.y);
-        intervalsFill.push(Object.values(d3.rgb(chromoBins[`${d.chromosome}`].color)));
-        intervalsStroke.push(Object.values(d3.rgb(chromoBins[`${d.chromosome}`].color).darker()));
+        intervalsFill.push(rgbtoInteger(d3.rgb(chromoBins[`${d.chromosome}`].color)));
+        intervalsStroke.push(rgbtoInteger(d3.rgb(chromoBins[`${d.chromosome}`].color).darker()));
         domainY = [d3.min([domainY[0], +d.y]), d3.max([domainY[1], +d.y])];
         intervalBins[d.iid] = d;
       });

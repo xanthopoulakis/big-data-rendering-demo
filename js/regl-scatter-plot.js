@@ -5,8 +5,8 @@ class ReglScatterPlot {
     this.stageHeight = totalHeight;
     this.pixelRatio = window.devicePixelRatio || 2;
     this.container = d3.select(`#${plotContainerId}`)
-      .style('width', `${this.stageWidth}px`)
-      .style('height', `${this.stageHeight}px`);
+    .style('width', `${this.stageWidth}px`)
+    .style('height', `${this.stageHeight}px`);
     d3.select(`#${plotContainerId} canvas`).remove();
 
     let regl = createREGL({
@@ -19,30 +19,35 @@ class ReglScatterPlot {
     this.positions = [[0.0, 0.0]];
     this.pointSize = this.pixelRatio;
     this.clear();
-    this.draw = regl({
-        frag: `
-        precision highp float;
-        varying vec4 vColor;
-        void main() {
-          gl_FragColor = vColor;
-        }`,
+    this.fbo = regl.framebuffer({
+      width: this.stageWidth,
+      height: this.stageHeight,
+      colorFormat: 'rgba',
+    });
+    let common = {
+      frag: `
+      precision highp float;
+      varying vec4 vColor;
+      void main() {
+        gl_FragColor = vColor;
+      }`,
 
-        vert: `
-        precision highp float;
-        attribute vec2 position;
-        varying vec4 vColor;
-        attribute float dataX, dataY, color;
-        uniform vec2 domainX, domainY;
-        uniform float stageWidth, stageHeight, pointSize;
+      vert: `
+      precision highp float;
+      attribute vec2 position;
+      varying vec4 vColor;
+      attribute float dataX, dataY, color;
+      uniform vec2 domainX, domainY;
+      uniform float stageWidth, stageHeight, pointSize;
 
-        vec2 normalizeCoords(vec2 position) {
-          // read in the positions into x and y vars
-          float x = position[0];
-          float y = position[1];
+      vec2 normalizeCoords(vec2 position) {
+        // read in the positions into x and y vars
+        float x = position[0];
+        float y = position[1];
 
-          return vec2(
-            2.0 * ((x / stageWidth) - 0.5),
-            -(2.0 * ((y / stageHeight) - 0.5)));
+        return vec2(
+          2.0 * ((x / stageWidth) - 0.5),
+          -(2.0 * ((y / stageHeight) - 0.5)));
         }
 
         void main() {
@@ -66,42 +71,44 @@ class ReglScatterPlot {
           vColor = vec4(red / 255.0, green / 255.0, blue / 255.0, 1.0);
         }`,
 
-        attributes: {
-          position: this.positions,
+      attributes: {
+        position: this.positions,
 
-          dataX: {
-            buffer: regl.prop("dataX"),
-            divisor: 1
-          },
-
-          dataY: {
-            buffer: regl.prop("dataY"),
-            divisor: 1
-          },
-
-          color: {
-            buffer: regl.prop("color"),
-            divisor: 1
-          }
+        dataX: {
+          buffer: regl.prop("dataX"),
+          divisor: 1
         },
 
-        primitive: 'points',
-
-        depth: {
-          enable: false
+        dataY: {
+          buffer: regl.prop("dataY"),
+          divisor: 1
         },
 
-        uniforms: {
-          stageWidth: this.stageWidth,
-          stageHeight: this.stageHeight,
-          pointSize: this.pointSize,
-          domainX: regl.prop("domainX"),
-          domainY: regl.prop("domainY")
-        },
+        color: {
+          buffer: regl.prop("color"),
+          divisor: 1
+        }
+      },
 
-        count: this.positions.length,
-        instances: regl.prop('instances')
-      });
+      primitive: 'points',
+
+      depth: {
+        enable: false
+      },
+
+      uniforms: {
+        stageWidth: this.stageWidth,
+        stageHeight: this.stageHeight,
+        pointSize: this.pointSize,
+        domainX: regl.prop("domainX"),
+        domainY: regl.prop("domainY")
+      },
+
+      count: this.positions.length,
+      instances: regl.prop('instances')
+    };
+    this.draw = regl(common);
+    this.drawFbo = regl({...common, framebuffer: this.fbo});
   }
 
   clear() {
@@ -115,26 +122,47 @@ class ReglScatterPlot {
   load(dataPointsX, dataPointsY, dataPointsColor, domainX, domainY) {
     const dataX = this.reglInstance.buffer(dataPointsX);
     const dataY = this.reglInstance.buffer(dataPointsY);
-    const color = this.reglInstance.buffer(dataPointsColor);
+    let color = this.reglInstance.buffer(dataPointsColor);
     const instances = dataPointsX.length;
+
     this.dataBuffer = {dataX, dataY, color, domainX, domainY, instances};
+    color = this.reglInstance.buffer(dataPointsColor.map((d,i) => i + 3000));
+    this.dataBufferFbo = {dataX, dataY, color, domainX, domainY, instances};
+
+    let self = this;
+    d3.select(this.container.node()).select('canvas').on('mousemove', function() {
+      let position = d3.mouse(this);
+      const pixels = self.reglInstance.read({
+        x: position[0],
+        y: self.stageHeight - position[1],
+        width: 1,
+        height: 1,
+        data: new Uint8Array(6),
+        framebuffer: self.fbo
+      });
+      let index = pixels[0] * 65536 + pixels[1] * 256 + pixels[2] - 3000;
+
+      d3.select('#scatter-plot-tooltip').html(`${dataPointsX[index]}: ${dataPointsY[index]}` )
+    });
 
     let xScale = d3.scaleLinear().domain(domainX).range([0, this.stageWidth]);
     d3.select(this.container.node()).select('canvas').call(
       d3.zoom()
-        .scaleExtent([1, Infinity])
-        .translateExtent([[0, 0], [this.stageWidth, this.stageHeight]])
-        .extent([[0, 0], [this.stageWidth, this.stageHeight]])
-        .on("zoom", () => {
+      .scaleExtent([1, Infinity])
+      .translateExtent([[0, 0], [this.stageWidth, this.stageHeight]])
+      .extent([[0, 0], [this.stageWidth, this.stageHeight]])
+      .on("zoom", () => {
 
-          this.clear();
+        this.clear();
 
-          this.dataBuffer.domainX = d3.event.transform.rescaleX(xScale).domain();
-          this.render();
+        this.dataBuffer.domainX = d3.event.transform.rescaleX(xScale).domain();
+        this.dataBufferFbo.domainX = d3.event.transform.rescaleX(xScale).domain();
+        this.render();
     }));
   }
 
   render() {
     this.draw(this.dataBuffer);
+    this.drawFbo(this.dataBufferFbo);
   }
 }
